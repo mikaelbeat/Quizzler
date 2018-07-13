@@ -3,6 +3,7 @@ package com.londonappbrewery.quizzler;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +13,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+
+    // Sounds
+    MediaPlayer backgroundMusic;
+    MediaPlayer correctAnswer;
+    MediaPlayer wrongAnswer;
+    MediaPlayer buttonSound;
 
     // TODO: Declare member variables here:
     Button trueButton;
@@ -49,6 +56,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        backgroundMusic = MediaPlayer.create(getApplicationContext(), R.raw.fearless);
+        correctAnswer = MediaPlayer.create(getApplicationContext(), R.raw.correct);
+        wrongAnswer = MediaPlayer.create(getApplicationContext(), R.raw.wrong);
+        buttonSound = MediaPlayer.create(getApplicationContext(), R.raw.button);
+
         if (savedInstanceState != null){
             userScore = savedInstanceState.getInt("ScoreKey");
             startIndex = savedInstanceState.getInt("Question");
@@ -71,6 +83,7 @@ public class MainActivity extends Activity {
         trueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                playButtonSound();
                 Log.d("Quizzler", "True pressed!");
                 checkAnswer(true);
                 updateQuestion();
@@ -82,6 +95,7 @@ public class MainActivity extends Activity {
         falseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                playButtonSound();
                 Log.d("Quizzler", "False pressed!");
                 checkAnswer(false);
                 updateQuestion();
@@ -90,6 +104,30 @@ public class MainActivity extends Activity {
             }
         });
 
+    }
+    
+    @Override
+    protected void onPause(){
+        super.onPause();
+        backgroundMusic.pause();
+    }
+    
+    @Override
+    protected void onResume(){
+        super.onResume();
+        backgroundMusic.start();
+    }
+    
+    public void playCorrectAnswerSound(){
+        correctAnswer.start();
+    }
+    
+    public void playWrongAnswerSound(){
+        wrongAnswer.start();
+    }
+    
+    public void playButtonSound(){
+        buttonSound.start();
     }
 
     private void updateQuestion(){
@@ -119,9 +157,11 @@ public class MainActivity extends Activity {
         boolean correctAnswer = mQuestionBank[startIndex].isAnswer();
 
         if(userSelection == correctAnswer){
+            playCorrectAnswerSound();
             Toast.makeText(getApplicationContext(),R.string.correct_toast, Toast.LENGTH_SHORT).show();
             userScore += 1;
         }else{
+            playWrongAnswerSound();
             Toast.makeText(getApplicationContext(), R.string.incorrect_toast, Toast.LENGTH_SHORT).show();
         }
     }
